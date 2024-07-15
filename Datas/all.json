@@ -1,8 +1,25 @@
 {
-    "consommation chaud" : [],
-    "consommation froid" : [],
-    "consommation non thermique" :[],
-    "Surface":"",
-    "DJU":"",
-    "DJF":""
+    "_commentaire":"'problemes_completude':['id_batiment'] à réintégrer en faisant dépendre du taux de complétude",
+    "consommation chaud" : ["Gaz - Consommation","Réseau de chaleur - Consommation","Fioul - Consommation","Consommation de granulés (kWh)"],
+    "consommation froid" : ["Réseau de froid - Consommation"],
+    "consommation non thermique" : ["Électricité - Consommation"],
+    "Surface" : "Surface occupée dans le bâtiment",
+    "DJU" : "Degrés-jours (DJ) de chauffage",
+    "DJF" : "",
+    "typologie" : "Typologie détaillée",
+    "filtres simples" :{"Etat du bâtiment":"Ouvert"},
+    "verif dqc" : {
+		"problemes_batiments" : ["id_batiment"],
+        "problemes_compteurs":["id_batiment"],
+        "pdl_sans_données_récentes":["id_batiment"],
+        "cpteurs_actifs_dans_bat_inactif":["id_batiment"],
+        "problemes_evolution_des_kpi": ["code gestionnaire","code site"],
+        "problemes_evolution_des_pdl":["id_batiment"]
+	},
+	"dqc to osfi" : {
+		"id_batiment" : "Code bâtiment",
+		"code gestionnaire" : "ID du gestionnaire",
+		"code site" : "Code Site"
+	}
+	
 }
