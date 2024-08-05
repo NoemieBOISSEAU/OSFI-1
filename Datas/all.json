@@ -1,14 +1,34 @@
 {
     "_commentaire":"'problemes_completude':['id_batiment'] à réintégrer en faisant dépendre du taux de complétude",
-    "consommation chaud" : ["Gaz - Consommation","Réseau de chaleur - Consommation","Fioul - Consommation","Consommation de granulés (kWh)"],
-    "consommation froid" : ["Réseau de froid - Consommation"],
-    "consommation non thermique" : ["Électricité - Consommation"],
+	"batiment" : "Code bâtiment",
+	"code sit RT":"Code Site",
+	"code bat RT": "Code bâtiment RT",
+	"RT code sit":"Code Site",
+	"RT code bat":"Code bât/ter",
+	"RT surf":["Surface de plancher","SUB","SBA","SUN","SHON"],
+	"date":{"format":"YYYY-MM-DD","title":"Date"},
+    "consommation chaud" : {"annuel":["Gaz - Consommation","Réseau de chaleur - Consommation","Fioul - Consommation","Consommation de granulés (kWh)"],"mensualisé":["Gaz - Consommation","Réseau de chaleur - Consommation","Fioul - Consommation","Consommation de granulés de bois","Propane - Consommation"]},
+    "consommation froid" : {"annuel":["Réseau de froid - Consommation"],"mensualisé":["Réseau de froid - Consommation"]},
+    "consommation non thermique" : {"annuel":["Électricité - Consommation"],"mensualisé":["Électricité - Consommation"]},
     "Surface" : "Surface occupée dans le bâtiment",
     "DJU" : "Degrés-jours (DJ) de chauffage",
-    "DJF" : "",
-    "typologie" : "Typologie détaillée",
+    "DJF" : "Degrés-jours (DJ) de refroidissement",
+    "typologie" : ["Typologie du bâtiment","Typologie détaillée"],
     "filtres simples" :{"Etat du bâtiment":"Ouvert"},
-    "verif dqc" : {
+	"specific_months":{"clim":7,"chauffage":1,"rien":5},
+	"typologies autorisees":[
+		["BÂT. ENSEIGNEMENT OU SPORT"],
+		["BÂTIMENT CULTUREL"],
+		["BATIMENT SANITAIRE OU SOCIAL"],
+		["BUREAU"],
+		["BATIMENT TECHNIQUE","BÂTIMENT TECHNIQUE"],
+		["BATIMENT TECHNIQUE","BÂTIMENT SCIENTIFIQUE"],
+		["BATIMENT TECHNIQUE","CENTRE DE RECHERCHE OU D'ESSAI"],
+		["BATIMENT TECHNIQUE","DÉPÔT D'ARCHIVES"],
+		["BATIMENT TECHNIQUE","CENTRE INFORMATIQUE"],
+		["BATIMENT TECHNIQUE","POSTE DE COMMANDEMENT"]
+	],
+	"verif dqc" : {
 		"problemes_batiments" : ["id_batiment"],
         "problemes_compteurs":["id_batiment"],
         "pdl_sans_données_récentes":["id_batiment"],
@@ -21,5 +41,4 @@
 		"code gestionnaire" : "ID du gestionnaire",
 		"code site" : "Code Site"
 	}
-	
 }
