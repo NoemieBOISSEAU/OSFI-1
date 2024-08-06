@@ -698,13 +698,15 @@ class OSFI_regress:
                     if code[i] in "0123456789" :
                         txt+=code[i]
                     else :
+                        if txt=="" :
+                            return None
                         return int(txt)
                 return int(txt)
             return None
         def compear_code(s1,b1,s2,b2):
             return (str(s1)==str(s2)) and (str(b1)==str(b2))
         def compear_surf(surf_,L_surf_):
-            print("Compearing OSFI surf to RT surf\n\t"+str(surf_)+" : "+str(L_surf_))
+            print("\t\tCompearing OSFI surf to RT surf\n\t\t\t"+str(surf_)+" : "+str(L_surf_))
             flag=True
             for i in range(len(L_surf_)):
                 flag = flag and L_surf_[i] in [None,"",'""']
@@ -903,7 +905,7 @@ if __name__=="__main__" :
     for file in L_files :
         XL = OSFI_regress(path)
         if not(file.startswith("meta_") or file.startswith("dqc_") or file.startswith("Surface_OAD")) and file.endswith(".xlsx") :
-            XL.create_meta_excel(file,"Surfaces_OAD_2024_08_05.xlsx")
+            XL.create_meta_excel(file,rt_doc)
         del XL
             
         
