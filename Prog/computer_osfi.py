@@ -316,6 +316,7 @@ class OSFI_regress:
                 values.append([])
                 for i in range(len(Titles)) :
                     values[-1].append(wb.active.cell(row=row,column=i+1).value)
+                values[-1].append(1)
                 flag = False
                 for i in range(len(Titles)) :
                     flag = flag or not(wb.active.cell(row=row+1,column=i+1).value in [None,"",'""'])
@@ -323,6 +324,7 @@ class OSFI_regress:
                         break
                 row+=1
             wb.close()
+            Titles.append("Nombre de mois")
             print("\tFichier mensuel Lu")
             #Récupération des codes bâtiments et des années
             print("\tConversion des données")
@@ -333,8 +335,16 @@ class OSFI_regress:
                     Ly.append(year)
                 if not(bat in Lbat):
                     Lbat.append(bat)
+            number = len(Lbat)
+            prev_num=0
+            curr_num=0
+            t_init = time.time()
             for Y in Ly :
                 for B in Lbat :
+                    curr_num+=1
+                    if curr_num/(number-1)-prev_num>=0.01 :
+                        prev_num=curr_num/(number-1)
+                        print("\t\t\t"+str(int(100*prev_num))+"% for duration : "+str(int((time.time()-t_init)/60))+" min")
                     val,first = [],True
                     n = len(values)
                     for i in range(n) :
@@ -344,11 +354,16 @@ class OSFI_regress:
                             if first :
                                 for j in range(len(values[n-1-i])) :
                                     val.append(values[n-1-i][j])
+                                val[len(Titles)-1]=self.__to_float(val[j-1])
                                 for j in self.__params_num["consommation chaud"] :
                                     val[j-1]=self.__to_float(val[j-1])
                                 for j in self.__params_num["consommation froid"] :
                                     val[j-1]=self.__to_float(val[j-1])
                                 for j in self.__params_num["consommation non thermique"] :
+                                    val[j-1]=self.__to_float(val[j-1])
+                                for j in self.__params_num["DJU"] :
+                                    val[j-1]=self.__to_float(val[j-1])
+                                for j in self.__params_num["DJF"] :
                                     val[j-1]=self.__to_float(val[j-1])
                                 for specific_type in self.__params["specific_months"]:
                                     if month ==self.__params["specific_months"][specific_type]:
@@ -386,11 +401,16 @@ class OSFI_regress:
                                             index+=1
                                         for j in self.__params_num["consommation non thermique"] :
                                             index+=1
+                                val[len(Titles)-1]+=self.__to_float(values[n-1-i][len(Titles)-1])
                                 for j in self.__params_num["consommation chaud"] :
                                     val[j-1]+=self.__to_float(values[n-1-i][j-1])
                                 for j in self.__params_num["consommation froid"] :
                                     val[j-1]+=self.__to_float(values[n-1-i][j-1])
                                 for j in self.__params_num["consommation non thermique"] :
+                                    val[j-1]+=self.__to_float(values[n-1-i][j-1])
+                                for j in self.__params_num["DJU"] :
+                                    val[j-1]+=self.__to_float(values[n-1-i][j-1])
+                                for j in self.__params_num["DJF"] :
                                     val[j-1]+=self.__to_float(values[n-1-i][j-1])
                             del values[n-1-i]
                     Values.append(val)
