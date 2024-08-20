@@ -299,6 +299,7 @@ if __name__=="__main__" :
     XL = Excel(path1)
     XL.import_columns_from(path=path2,links_main_to_imported={"Code du Point de livraison":"Compteur"},cols_to_import=["Ratio"],where={},collapsed="summ",count_imported=False)
     XL.save(path3)
+    
         
         
             
