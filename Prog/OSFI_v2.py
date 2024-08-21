@@ -60,11 +60,13 @@ class Excel:
         self.Values=[]
         self.flag=False
         if path==None :
+            print("Début de la lecture du fichier :"+self.path.split("\\")[-1].split('/')[-1])
             if self.path==None :
                 self.flag = False
             else :
                 workbook = openpyxl.load_workbook(self.path)
         else :
+            print("Début de la lecture du fichier :"+path.split("\\")[-1].split('/')[-1])
             workbook = openpyxl.load_workbook(path)
         for col in range(workbook.active.max_column):
             self.Names.append(workbook.active.cell(row=1,column=col+1).value)
@@ -73,6 +75,7 @@ class Excel:
             for col in range(workbook.active.max_column):
                 self.Values[-1].append(workbook.active.cell(row=rw+2,column=col+1).value)
         workbook.close()
+        print("Fin de la lecture du fichier")
     def index(self,name):
         if isinstance(name,str):
             flag=False
@@ -202,6 +205,7 @@ class Excel:
                 if self.__is(name,L_names[i]) :
                     return i
             return -1
+        print("Début de la lecture du fichier :"+path.split("\\")[-1].split('/')[-1])
         workbook = openpyxl.load_workbook(path)
         for col in range(workbook.active.max_column):
             L_names.append(workbook.active.cell(row=1,column=col+1).value)
@@ -210,13 +214,17 @@ class Excel:
             for col in range(workbook.active.max_column):
                 L_values[-1].append(workbook.active.cell(row=rw+2,column=col+1).value)
         workbook.close()
+        print("Fin de la lecture du fichier")
+        print("Début des filtrage")
         for x in where :
+            print("\tfiltrage sur : "+x)
             i = index(x)
             if not(i==-1) :
                 n=len(L_values)
                 for j in range(n) :
                     if not(self.__is(L_values[n-1-j][i],where[x])) :
                         del L_values[n-1-j]
+        print("Fin des filtrages")
         L_import_index = []
         L_imported_indexes=[]
         if isinstance(cols_to_import,list):
@@ -255,6 +263,7 @@ class Excel:
                 links_base.append(i)
                 links_imported.append(j)
         n = len(self.Values)
+        print("Ajout des éléments de la table chargée (partie longue de l'algorithme)")
         for j in range(len(self.Values)) :
             print(str(int(100*(j+1)/n))+"%")
             for i in range(len(L_values)) :
@@ -269,8 +278,14 @@ class Excel:
                     for k in range(len(L_import_index)) :
                         if collapsed=="summ" :
                             self.Values[j][L_imported_indexes[k]] = self.__to_num(self.Values[j][L_imported_indexes[k]])+self.__to_num(L_values[i][L_import_index[k]])
+                        elif collapsed=="concat" :
+                            if self.Values[j][L_imported_indexes[k]] in [None,"",'""'] :
+                                self.Values[j][L_imported_indexes[k]]=str(L_values[i][L_import_index[k]])
+                            else :
+                                self.Values[j][L_imported_indexes[k]]=str(self.Values[j][L_imported_indexes[k]])+";"+str(L_values[i][L_import_index[k]])
                         else :
                             self.Values[j][L_imported_indexes[k]]=L_values[i][L_import_index[k]]
+        print("Elements ajoutés à la table principale")
     def save(self,path):
         if path.endswith(".xlsx") :
             workbook = openpyxl.Workbook()
@@ -291,13 +306,35 @@ class Excel:
                     file.write("\n")
         else :
             print("Le type de fichier pour l'enregistrement est inconnu")
+    def get_list_from_col(self,name):
+        i = self.index(name)
+        if i==-1 :
+            return []
+        L=[]
+        for j in range(len(self.Values)) :
+            if not(self.Values[j][i] in L) :
+                L.append(self.Values[j][i])
+        return L
 if __name__=="__main__" :
     import os
-    path1 = os.path.join(os.getcwd(),"Compteurs.xlsx")
-    path2 = os.path.join(os.getcwd(),"Lien_Compteur_-_Batiment.xlsx")
+    import time
+    path1 = os.path.join(os.getcwd(),"Exporter_les_donnees_du_Referentiel_Technique.xlsx")
+    path2 = os.path.join(os.getcwd(),"Consommations_mensualisees_des_equipements.xlsx")
     path3 = os.path.join(os.getcwd(),"result.xlsx")
     XL = Excel(path1)
-    XL.import_columns_from(path=path2,links_main_to_imported={"Code du Point de livraison":"Compteur"},cols_to_import=["Ratio"],where={},collapsed="summ",count_imported=False)
+    t=time.time()
+    XL.import_columns_from(path=path2,links_main_to_imported={"Identifiant du bâtiment":"Compteur"},cols_to_import=["Gaz - Consommation","Électricité - Consommation","Réseau de chaleur - Consommation","Réseau de froid - Consommation","Fioul - Consommation","Consommation de granulés de bois"],where={},collapsed="summ",count_imported=False)
+    XL.save(path3[-5]+"_step1.xlsx")
+    XL.import_columns_from(path=path2,links_main_to_imported={"Identifiant du bâtiment":"Compteur"},cols_to_import={"Gaz - Consommation":"Mai Gaz - Consommation","Électricité - Consommation":"Mai Électricité - Consommation","Réseau de chaleur - Consommation":"Mai Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Mai Réseau de froid - Consommation","Fioul - Consommation":"Mai Fioul - Consommation","Consommation de granulés de bois":"Mai Consommation de granulés de bois"},where={"Date":"2023-05-01"},collapsed="summ",count_imported=False)
+    XL.save(path3[-5]+"_step2.xlsx")
+    XL.import_columns_from(path=path2,links_main_to_imported={"Identifiant du bâtiment":"Compteur"},cols_to_import={"Gaz - Consommation":"Janvier Gaz - Consommation","Électricité - Consommation":"Janvier Électricité - Consommation","Réseau de chaleur - Consommation":"Janvier Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Janvier Réseau de froid - Consommation","Fioul - Consommation":"Janvier Fioul - Consommation","Consommation de granulés de bois":"Janvier Consommation de granulés de bois"},where={"Date":"2023-01-01"},collapsed="summ",count_imported=False)
+    XL.save(path3[-5]+"_step3.xlsx")
+    XL.import_columns_from(path=path2,links_main_to_imported={"Identifiant du bâtiment":"Compteur"},cols_to_import={"Gaz - Consommation":"Juillet Gaz - Consommation","Électricité - Consommation":"Juillet Électricité - Consommation","Réseau de chaleur - Consommation":"Juillet Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Juillet Réseau de froid - Consommation","Fioul - Consommation":"Juillet Fioul - Consommation","Consommation de granulés de bois":"Juillet Consommation de granulés de bois"},where={"Date":"2023-07-01"},collapsed="summ",count_imported=False)
+    XL.save(path3[-5]+"_step4.xlsx")
+    L=XL.get_list_from_col("Code Site")
+    for x in L :
+        XL.virtual_group_by_sum(known_element={"Code Site":x}, to_sum_name={"Gaz - Consommation":"Pour le site Gaz - Consommation","Électricité - Consommation":"Pour le site Électricité - Consommation","Réseau de chaleur - Consommation":"Pour le site Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Pour le site Réseau de froid - Consommation","Fioul - Consommation":"Pour le site Fioul - Consommation","Consommation de granulés de bois":"Pour le site Consommation de granulés de bois"})
+    XL.save(path3[-5]+"_step5.xlsx")
     XL.save(path3)
     
         
