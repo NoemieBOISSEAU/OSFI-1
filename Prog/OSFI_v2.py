@@ -212,6 +212,7 @@ class Excel:
                 print(value)
             for i in range(count) :
                 self.Values[concerned_lines[i]][final_indexes[j]]=value
+    
     def import_columns_from(self,path,links_main_to_imported,cols_to_import,where={},collapsed="summ",count_imported=False) :
         if count_imported :
             count_index = len(self.Names)
@@ -320,6 +321,18 @@ class Excel:
                                 self.Values[j][L_imported_indexes[k]]=str(L_values[i][L_import_index[k]])
                             else :
                                 self.Values[j][L_imported_indexes[k]]=str(self.Values[j][L_imported_indexes[k]])+";"+str(L_values[i][L_import_index[k]])
+                        elif collapsed=="pos" :
+                            if self.Values[j][L_imported_indexes[k]]==None :
+                                self.Values[j][L_imported_indexes[k]]=True
+                            if not(self.Values[j][L_imported_indexes[k]] in [None,"",'""']) :
+                                self.Values[j][L_imported_indexes[k]] = (self.Values[j][L_imported_indexes[k]] and self.__to_num(L_values[i][L_import_index[k]])>=0)
+                        elif collapsed=="strictpos" :
+                            if self.Values[j][L_imported_indexes[k]]==None :
+                                self.Values[j][L_imported_indexes[k]]=True
+                            if self.Values[j][L_imported_indexes[k]] in [None,"",'""'] :
+                                self.Values[j][L_imported_indexes[k]]=False
+                            else :
+                                self.Values[j][L_imported_indexes[k]] = (self.Values[j][L_imported_indexes[k]] and self.__to_num(L_values[i][L_import_index[k]])>0)
                         else :
                             self.Values[j][L_imported_indexes[k]]=L_values[i][L_import_index[k]]
         PR.actualize(100)
@@ -470,7 +483,7 @@ class Excel:
                         val=value[n-1-i]+val
                     else :
                         break
-                elif value[n-1-i] in ["0123456789"] :
+                elif value[n-1-i] in "0123456789" :
                     val=value[n-1-i]+val
                 else :
                     break
@@ -488,11 +501,11 @@ class Excel:
                     Indexes_o.append(len(self.Names))
                     self.Names.append(columns[x])
                     for j in range(len(self.Values)) :
-                        self.Values[i].append(None)
+                        self.Values[j].append(None)
                 else :
                     Indexes_o.append(i)
         for i in range(len(self.Values)) :
-            for j in range(len(self.Indexes)) :
+            for j in range(len(Indexes)) :
                 self.Values[i][Indexes_o[j]] = self.__extract_ending_num(self.Values[i][Indexes[j]])
     def close(self):
         if not(self.aux_loaded=="") :
@@ -511,24 +524,26 @@ if __name__=="__main__" :
     XL.remove(known_element={"Typologie du bâtiment":["OUVRAGES D'ART RÉSEAUX VOIRIES","MONUMENT ET MÉMORIAL","ESPACE AMÉNAGÉ","ESPACE NATUREL","RÉSEAUX ET VOIRIES"]})
     XL.extract_ending_num({"Code Site":"Code Site RT"})
     XL.import_columns_from(path=path0,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Fluide":"Fluides relevés pour le bâtiment"},collapsed="concat")
+    XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Chaque mois est strictement 2022 Gaz - Consommation","Réseau de chaleur - Consommation":"Chaque mois est strictement 2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Chaque mois est strictement 2022 Réseau de froid - Consommation","Fioul - Consommation":"Chaque mois est strictement 2022 Fioul - Consommation","Consommation de granulés de bois":"Chaque mois est strictement 2022 Consommation de granulés de bois"},where={},collapsed="pos")
+    XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Électricité - Consommation":"Chaque mois est strictement Positif 2022 Électricité - Consommation"},where={},collapsed="strictpos")
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"2022 Gaz - Consommation","Électricité - Consommation":"2022 Électricité - Consommation","Réseau de chaleur - Consommation":"2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"2022 Réseau de froid - Consommation","Fioul - Consommation":"2022 Fioul - Consommation","Consommation de granulés de bois":"2022 Consommation de granulés de bois"},where={},collapsed="summ",count_imported=True)
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Mai 2022 Gaz - Consommation","Électricité - Consommation":"Mai 2022 Électricité - Consommation","Réseau de chaleur - Consommation":"Mai 2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Mai 2022 Réseau de froid - Consommation","Fioul - Consommation":"Mai 2022 Fioul - Consommation","Consommation de granulés de bois":"Mai 2022 Consommation de granulés de bois"},where={"Date":"2022-05-01"},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Hiver 2022 Gaz - Consommation","Électricité - Consommation":"Hiver 2022 Électricité - Consommation","Réseau de chaleur - Consommation":"Hiver 2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Hiver 2022 Réseau de froid - Consommation","Fioul - Consommation":"Hiver 2022 Fioul - Consommation","Consommation de granulés de bois":"Hiver 2022 Consommation de granulés de bois"},where={"Date":["2022-01-01","2022-02-01","2022-01-01","2022-03-01","2022-04-01","2022-05-01","2022-10-01","2022-11-01","2022-12-01"]},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Ete 2022 Gaz - Consommation","Électricité - Consommation":"Ete 2022 Électricité - Consommation","Réseau de chaleur - Consommation":"Ete 2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Ete 2022 Réseau de froid - Consommation","Fioul - Consommation":"Ete 2022 Fioul - Consommation","Consommation de granulés de bois":"Ete 2022 Consommation de granulés de bois"},where={"Date":["2022-06-01","2022-07-01","2022-08-01","2022-09-01"]},collapsed="summ",count_imported=False)
+    XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Chaque mois est strictement 2023 Gaz - Consommation","Réseau de chaleur - Consommation":"Chaque mois est strictement 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Chaque mois est strictement 2023 Réseau de froid - Consommation","Fioul - Consommation":"Chaque mois est strictement 2023 Fioul - Consommation","Consommation de granulés de bois":"Chaque mois est strictement 2023 Consommation de granulés de bois"},where={},collapsed="pos")
+    XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Électricité - Consommation":"Chaque mois est strictement Positif 2023 Électricité - Consommation"},where={},collapsed="strictpos")
     XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"2023 Gaz - Consommation","Électricité - Consommation":"2023 Électricité - Consommation","Réseau de chaleur - Consommation":"2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"2023 Réseau de froid - Consommation","Fioul - Consommation":"2023 Fioul - Consommation","Consommation de granulés de bois":"2023 Consommation de granulés de bois"},where={},collapsed="summ",count_imported=True)
     XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Mai 2023 Gaz - Consommation","Électricité - Consommation":"Mai 2023 Électricité - Consommation","Réseau de chaleur - Consommation":"Mai 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Mai 2023 Réseau de froid - Consommation","Fioul - Consommation":"Mai 2023 Fioul - Consommation","Consommation de granulés de bois":"Mai 2023 Consommation de granulés de bois"},where={"Date":"2023-05-01"},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Hiver 2023 Gaz - Consommation","Électricité - Consommation":"Hiver 2023 Électricité - Consommation","Réseau de chaleur - Consommation":"Hiver 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Hiver 2023 Réseau de froid - Consommation","Fioul - Consommation":"Hiver 2023 Fioul - Consommation","Consommation de granulés de bois":"Hiver 2023 Consommation de granulés de bois"},where={"Date":["2023-01-01","2023-02-01","2023-01-01","2023-03-01","2023-04-01","2023-05-01","2023-10-01","2023-11-01","2023-12-01"]},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Ete 2023 Gaz - Consommation","Électricité - Consommation":"Ete 2023 Électricité - Consommation","Réseau de chaleur - Consommation":"Ete 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Ete 2023 Réseau de froid - Consommation","Fioul - Consommation":"Ete 2023 Fioul - Consommation","Consommation de granulés de bois":"Ete 2023 Consommation de granulés de bois"},where={"Date":["2023-06-01","2023-07-01","2023-08-01","2023-09-01"]},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=oad_path,links_main_to_imported={"Code bâtiment RT":"Code bât/ter","Code Site RT":"Code Site"},cols_to_import={"Surface de plancher":"SDP RT","SUB":"SUB RT"},collapsed="last")
-    XL = Excel(path3[:-5]+"_step1.xlsx")
-    L=XL.get_list_from_col("Code Site",known_element={"Nombre d éléments importés":0})
+    L=XL.get_list_from_col("Code Site",known_element={"Fluides relevés pour le bâtiment":None})
     for x in L :
-        XL.virtual_group_by_sum(known_element={"Code Site":x}, to_sum_name=["Surface totale du bâtiment","Gaz - Consommation","Électricité - Consommation","Réseau de chaleur - Consommation","Réseau de froid - Consommation","Fioul - Consommation","Consommation de granulés de bois"],result_prefix="Regroupé par site ",add_count=True)
-    XL = Excel(path3[:-5]+"_step2.xlsx")
+        XL.virtual_group_by_sum(known_element={"Code Site":x}, to_sum_name=["Surface totale du bâtiment","2022 Gaz - Consommation","2022 Électricité - Consommation","2022 Réseau de chaleur - Consommation","2022 Réseau de froid - Consommation","2022 Fioul - Consommation","2022 Consommation de granulés de bois","2023 Gaz - Consommation","2023 Électricité - Consommation","2023 Réseau de chaleur - Consommation","2023 Réseau de froid - Consommation","2023 Fioul - Consommation","2023 Consommation de granulés de bois"],result_prefix="Regroupé par site ",add_count=True)
     XL.import_columns_from(path=oad_path,links_main_to_imported={"Code bâtiment RT":"Code bât/ter","Code Site RT":"Code Site"},cols_to_import={"Surface de plancher":"SDP RT","SUB":"SUB RT"},collapsed="last")
-    L = XL.get_list_from_cols(["Code Site","Code bâtiment RT"],{})
-    for [x,y] in L :
-        XL.virtual_group_by_sum(known_element={"Code Site":x,"Code bâtiment RT":y}, to_sum_name=["Surface totale du bâtiment"],result_prefix="Regroupé par bâtiment")
+    L=XL.get_list_from_col("Code bâtiment RT")
+    for x in L :
+        XL.virtual_group_by_sum(known_element={"Code bâtiment RT":x}, to_sum_name=["Surface totale du bâtiment"],result_prefix="Regroupé par bâtiment")
     XL.save(path3[:-5]+"_step3.xlsx")
     XL.save(path3)
     XL.close()
