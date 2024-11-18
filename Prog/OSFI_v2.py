@@ -267,6 +267,7 @@ class Excel:
                 value+=self.__to_num(self.Values[concerned_lines[i]][init_indexes[j]])
             for i in range(count) :
                 self.Values[concerned_lines[i]][final_indexes[j]]=value
+    
     def import_columns_from(self,path,links_main_to_imported,cols_to_import,where={},collapsed="summ",count_imported=False) :
         if count_imported :
             count_index = len(self.Names)
@@ -375,6 +376,18 @@ class Excel:
                                 self.Values[j][L_imported_indexes[k]]=str(L_values[i][L_import_index[k]])
                             else :
                                 self.Values[j][L_imported_indexes[k]]=str(self.Values[j][L_imported_indexes[k]])+";"+str(L_values[i][L_import_index[k]])
+                        elif collapsed=="pos" :
+                            if self.Values[j][L_imported_indexes[k]]==None :
+                                self.Values[j][L_imported_indexes[k]]=True
+                            if not(self.Values[j][L_imported_indexes[k]] in [None,"",'""']) :
+                                self.Values[j][L_imported_indexes[k]] = (self.Values[j][L_imported_indexes[k]] and self.__to_num(L_values[i][L_import_index[k]])>=0)
+                        elif collapsed=="strictpos" :
+                            if self.Values[j][L_imported_indexes[k]]==None :
+                                self.Values[j][L_imported_indexes[k]]=True
+                            if self.Values[j][L_imported_indexes[k]] in [None,"",'""'] :
+                                self.Values[j][L_imported_indexes[k]]=False
+                            else :
+                                self.Values[j][L_imported_indexes[k]] = (self.Values[j][L_imported_indexes[k]] and self.__to_num(L_values[i][L_import_index[k]])>0)
                         else :
                             self.Values[j][L_imported_indexes[k]]=L_values[i][L_import_index[k]]
         PR.actualize(100)
