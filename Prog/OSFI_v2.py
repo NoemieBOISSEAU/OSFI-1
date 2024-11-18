@@ -48,8 +48,9 @@ class Excel:
         elif b==None :
             return a in [None,"",'""']
         else :
-            print(a)
-            print(b)
+            print("Erreur de comparaison : ")
+            print("\t"+str(a))
+            print("\t"+str(b))
         return _a_==_b_
     def __to_num(self,a):
         if a==None :
@@ -73,6 +74,50 @@ class Excel:
             return val
         print("Erreur de convertion : "+a+" n'est pas un nombre")
         return -1
+    def __get_sig(self,value,known_element={},m=None):
+        main_index = self.index(value)
+        Indexes=[]
+        Values=[]
+        variance=0
+        nv=0
+        for x in known_element :
+            Indexes.append(self.index(x))
+            Values.append(known_element[x])
+        if m==None :
+            m=self.__get_mean()
+        for i in range(len(self.Values)) :
+            flag = True
+            for j in range(len(Indexes)) :
+                flag = self.__is(self.Values[i][Indexes[j]],Values[j])
+                if not(flag) :
+                    break
+            if flag :
+                if not(self.__to_num(self.Values[i][main_index])==0) :
+                    nv=nv+1
+                    variance+=(m-self.__to_num(self.Values[i][main_index]))*(m-self.__to_num(self.Values[i][main_index]))
+        variance/=nv
+        return variance**0.5
+    def __get_mean(self,value,known_element={}):
+       main_index = self.index(value)
+       Indexes=[]
+       Values=[]
+       nm=0
+       for x in known_element :
+           Indexes.append(self.index(x))
+           Values.append(known_element[x])
+       m=0
+       for i in range(len(self.Values)) :
+           flag = True
+           for j in range(len(Indexes)) :
+               flag = self.__is(self.Values[i][Indexes[j]],Values[j])
+               if not(flag) :
+                   break
+           if flag :
+               if not(self.__to_num(self.Values[i][main_index])==0) :
+                   nm=nm+1
+                   m+=(self.__to_num(self.Values[i][main_index]))
+       m/=nm
+       return m
     def read(self,path=None) :
         self.Names=[]
         self.Values=[]
@@ -118,7 +163,7 @@ class Excel:
         I=[]
         I2=[]
         for x in known_element :
-            i=self.index(x)==-1 
+            i=self.index(x)
             if i==-1 :
                 print("Erreur d'attribution d'une valeur : l'un des éléments à reconnaitre n'est pas dans le fichier de base")
             else :
@@ -126,13 +171,25 @@ class Excel:
                 I2.append(x)
         for i in range(len(self.Values)):
             flag=False
-            for j in range(I):
-                flag = flag or not(self.__is(self.Values[i][I[j]],known_element[I2[i]]))
+            for j in range(len(I)):
+                flag = not(self.__is(self.Values[i][I[j]],known_element[I2[j]]))
                 if flag :
                     break
             if not(flag) :
                 for x in element_to_add :
                     self.Values[i][self.index(x)] = element_to_add[x]
+                    
+    def is_in(self,col_names,col_values,final_name):
+        self.Names.append(final_name)
+        for i in range(len(self.Values)) :
+            for j in range(len(col_values)):
+                flag=True
+                for k in range(len(col_values[j])):
+                    flag = flag and self.__is(self.Values[i][self.index(col_names[k])],col_values[j][k])
+                if flag :
+                    break
+            self.Values[i].append(flag)
+                
     def sum_values(self,known_element,element_to_add):
         for x in element_to_add :
             if self.index(x)==-1 :
@@ -208,8 +265,6 @@ class Excel:
             value = 0
             for i in range(count) :
                 value+=self.__to_num(self.Values[concerned_lines[i]][init_indexes[j]])
-            if not(value==0) :
-                print(value)
             for i in range(count) :
                 self.Values[concerned_lines[i]][final_indexes[j]]=value
     def import_columns_from(self,path,links_main_to_imported,cols_to_import,where={},collapsed="summ",count_imported=False) :
@@ -470,7 +525,7 @@ class Excel:
                         val=value[n-1-i]+val
                     else :
                         break
-                elif value[n-1-i] in ["0123456789"] :
+                elif value[n-1-i] in "0123456789" :
                     val=value[n-1-i]+val
                 else :
                     break
@@ -488,48 +543,97 @@ class Excel:
                     Indexes_o.append(len(self.Names))
                     self.Names.append(columns[x])
                     for j in range(len(self.Values)) :
-                        self.Values[i].append(None)
+                        self.Values[j].append(None)
                 else :
                     Indexes_o.append(i)
         for i in range(len(self.Values)) :
-            for j in range(len(self.Indexes)) :
+            for j in range(len(Indexes)) :
                 self.Values[i][Indexes_o[j]] = self.__extract_ending_num(self.Values[i][Indexes[j]])
+    def get_stat_by_element(self,col,value,known_element={}):
+        L = XL.get_list_from_col(col,known_element)
+        i=0
+        for x in L :
+            print(i)
+            i+=1
+            known_element[col] = x
+            m = self.__get_mean(value,known_element)
+            sig = self.__get_sig(value,known_element,m)
+            print(m,sig)
+            self.add_values(known_element,{"moyenne : "+value:m,"ecart type : "+value:sig})
     def close(self):
         if not(self.aux_loaded=="") :
             self.aux_workbook.close()
+            
 if __name__=="__main__" :
     import os
     import time
-    path0 = os.path.join(os.getcwd(),"Lien_Compteur_-_Batiment(IDF).xlsx")
-    path1 = os.path.join(os.getcwd(),"Exporter_les_donnees_du_Referentiel_Technique(cd92).xlsx")
-    path2023 = os.path.join(os.getcwd(),"Consommations_mensualisees_des_equipements(cd92 2023).xlsx")
-    path2022 = os.path.join(os.getcwd(),"Consommations_mensualisees_des_equipements(cd92 2022).xlsx")
-    path3 = os.path.join(os.getcwd(),"result_IDF.xlsx")
-    oad_path = os.path.join(os.getcwd(),"OAD.xlsx")
+    def get_last_file_of(path):
+        maxt=0
+        L = os.listdir(path)
+        for x in L :
+            if x.endswith(".xlsx") :
+                maxt = max(os.path.getmtime(os.path.join(path,x)),maxt)
+        if not(maxt==0) :
+            for x in L :
+                if x.endswith(".xlsx") and os.path.getmtime(os.path.join(path,x))==maxt :
+                    return os.path.join(path,x)
+        return None
+    
+    path0 = get_last_file_of(os.path.join(os.getcwd(),"OSFI_lien_entre_compteur_et_batiment"))
+    path1 = get_last_file_of(os.path.join(os.getcwd(),"OSFI_donnees_du_RT"))
+    path2023 = get_last_file_of(os.path.join(os.getcwd(),"OSFI_consommation_mensuelle_2023"))
+    path2022 = get_last_file_of(os.path.join(os.getcwd(),"OSFI_consommation_mensuelle_2022"))
+    path3 = os.path.join(os.getcwd(),"result.xlsx")
+    oad_path = get_last_file_of(os.path.join(os.getcwd(),"OAD_liste_des_batiments_et_de_leurs_surface"))
     t=time.time()
     XL = Excel(path1)
     XL.remove(known_element={"Typologie du bâtiment":["OUVRAGES D'ART RÉSEAUX VOIRIES","MONUMENT ET MÉMORIAL","ESPACE AMÉNAGÉ","ESPACE NATUREL","RÉSEAUX ET VOIRIES"]})
     XL.extract_ending_num({"Code Site":"Code Site RT"})
     XL.import_columns_from(path=path0,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Fluide":"Fluides relevés pour le bâtiment"},collapsed="concat")
+    
+    #XL.save(path3[:-5]+"_step1.xlsx")
+    # XL = Excel(path3[:-5]+"_step1.xlsx")
+    
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"2022 Gaz - Consommation","Électricité - Consommation":"2022 Électricité - Consommation","Réseau de chaleur - Consommation":"2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"2022 Réseau de froid - Consommation","Fioul - Consommation":"2022 Fioul - Consommation","Consommation de granulés de bois":"2022 Consommation de granulés de bois"},where={},collapsed="summ",count_imported=True)
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Mai 2022 Gaz - Consommation","Électricité - Consommation":"Mai 2022 Électricité - Consommation","Réseau de chaleur - Consommation":"Mai 2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Mai 2022 Réseau de froid - Consommation","Fioul - Consommation":"Mai 2022 Fioul - Consommation","Consommation de granulés de bois":"Mai 2022 Consommation de granulés de bois"},where={"Date":"2022-05-01"},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Hiver 2022 Gaz - Consommation","Électricité - Consommation":"Hiver 2022 Électricité - Consommation","Réseau de chaleur - Consommation":"Hiver 2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Hiver 2022 Réseau de froid - Consommation","Fioul - Consommation":"Hiver 2022 Fioul - Consommation","Consommation de granulés de bois":"Hiver 2022 Consommation de granulés de bois"},where={"Date":["2022-01-01","2022-02-01","2022-01-01","2022-03-01","2022-04-01","2022-05-01","2022-10-01","2022-11-01","2022-12-01"]},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=path2022,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Ete 2022 Gaz - Consommation","Électricité - Consommation":"Ete 2022 Électricité - Consommation","Réseau de chaleur - Consommation":"Ete 2022 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Ete 2022 Réseau de froid - Consommation","Fioul - Consommation":"Ete 2022 Fioul - Consommation","Consommation de granulés de bois":"Ete 2022 Consommation de granulés de bois"},where={"Date":["2022-06-01","2022-07-01","2022-08-01","2022-09-01"]},collapsed="summ",count_imported=False)
+    
+    #XL.save(path3[:-5]+"_step2.xlsx")
+    # XL = Excel(path3[:-5]+"_step2.xlsx")
+    
     XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"2023 Gaz - Consommation","Électricité - Consommation":"2023 Électricité - Consommation","Réseau de chaleur - Consommation":"2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"2023 Réseau de froid - Consommation","Fioul - Consommation":"2023 Fioul - Consommation","Consommation de granulés de bois":"2023 Consommation de granulés de bois"},where={},collapsed="summ",count_imported=True)
     XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Mai 2023 Gaz - Consommation","Électricité - Consommation":"Mai 2023 Électricité - Consommation","Réseau de chaleur - Consommation":"Mai 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Mai 2023 Réseau de froid - Consommation","Fioul - Consommation":"Mai 2023 Fioul - Consommation","Consommation de granulés de bois":"Mai 2023 Consommation de granulés de bois"},where={"Date":"2023-05-01"},collapsed="summ",count_imported=False)
-    XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Hiver 2023 Gaz - Consommation","Électricité - Consommation":"Hiver 2023 Électricité - Consommation","Réseau de chaleur - Consommation":"Hiver 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Hiver 2023 Réseau de froid - Consommation","Fioul - Consommation":"Hiver 2023 Fioul - Consommation","Consommation de granulés de bois":"Hiver 2023 Consommation de granulés de bois"},where={"Date":["2023-01-01","2023-02-01","2023-01-01","2023-03-01","2023-04-01","2023-05-01","2023-10-01","2023-11-01","2023-12-01"]},collapsed="summ",count_imported=False)
+    XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Hiver 2023 Gaz - Consommation","Électricité - Consommation":"Hiver 2023 Électricité - Consommation","Réseau de chaleur - Consommation":"Hiver 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Hiver 2023 Réseau de froid - Consommation","Fioul - Consommation":"Hiver 2023 Fioul - Consommation","Consommation de granulés de bois":"Hiver 2023 Consommation de granulés de bois"},where={"Date":["2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-10-01","2023-11-01","2023-12-01"]},collapsed="summ",count_imported=False)
     XL.import_columns_from(path=path2023,links_main_to_imported={"Identifiant du bâtiment":"Identifiant du bâtiment"},cols_to_import={"Gaz - Consommation":"Ete 2023 Gaz - Consommation","Électricité - Consommation":"Ete 2023 Électricité - Consommation","Réseau de chaleur - Consommation":"Ete 2023 Réseau de chaleur - Consommation","Réseau de froid - Consommation":"Ete 2023 Réseau de froid - Consommation","Fioul - Consommation":"Ete 2023 Fioul - Consommation","Consommation de granulés de bois":"Ete 2023 Consommation de granulés de bois"},where={"Date":["2023-06-01","2023-07-01","2023-08-01","2023-09-01"]},collapsed="summ",count_imported=False)
+    
+    #XL.save(path3[:-5]+"_step3.xlsx")
+    # XL = Excel(path3[:-5]+"_step3.xlsx")
+    
     XL.import_columns_from(path=oad_path,links_main_to_imported={"Code bâtiment RT":"Code bât/ter","Code Site RT":"Code Site"},cols_to_import={"Surface de plancher":"SDP RT","SUB":"SUB RT"},collapsed="last")
-    XL = Excel(path3[:-5]+"_step1.xlsx")
+    
+    # XL.save(path3[:-5]+"_step4.xlsx")
+    # XL = Excel(path3[:-5]+"_step4.xlsx")
+    
     L=XL.get_list_from_col("Code Site",known_element={"Nombre d éléments importés":0})
     for x in L :
-        XL.virtual_group_by_sum(known_element={"Code Site":x}, to_sum_name=["Surface totale du bâtiment","Gaz - Consommation","Électricité - Consommation","Réseau de chaleur - Consommation","Réseau de froid - Consommation","Fioul - Consommation","Consommation de granulés de bois"],result_prefix="Regroupé par site ",add_count=True)
-    XL = Excel(path3[:-5]+"_step2.xlsx")
+        XL.virtual_group_by_sum(known_element={"Code Site":x}, to_sum_name=["Surface au sol","2022 Gaz - Consommation","2022 Électricité - Consommation","2022 Réseau de chaleur - Consommation","2022 Réseau de froid - Consommation","2022 Fioul - Consommation","2022 Consommation de granulés de bois","2023 Gaz - Consommation","2023 Électricité - Consommation","2023 Réseau de chaleur - Consommation","2023 Réseau de froid - Consommation","2023 Fioul - Consommation","2023 Consommation de granulés de bois"],result_prefix="Regroupé par site ",add_count=True)
+    #XL = Excel(path3[:-5]+"_step2.xlsx")
     XL.import_columns_from(path=oad_path,links_main_to_imported={"Code bâtiment RT":"Code bât/ter","Code Site RT":"Code Site"},cols_to_import={"Surface de plancher":"SDP RT","SUB":"SUB RT"},collapsed="last")
     L = XL.get_list_from_cols(["Code Site","Code bâtiment RT"],{})
     for [x,y] in L :
-        XL.virtual_group_by_sum(known_element={"Code Site":x,"Code bâtiment RT":y}, to_sum_name=["Surface totale du bâtiment"],result_prefix="Regroupé par bâtiment")
-    XL.save(path3[:-5]+"_step3.xlsx")
+        XL.virtual_group_by_sum(known_element={"Code Site":x,"Code bâtiment RT":y}, to_sum_name=["Surface au sol"],result_prefix="Regroupé par bâtiment")
+    XL.is_in(["Typologie du bâtiment","Typologie détaillée"],[["BÂT. ENSEIGNEMENT OU SPORT"],
+		["BÂTIMENT CULTUREL"],
+		["BATIMENT SANITAIRE OU SOCIAL"],
+		["BUREAU"],
+		["BATIMENT TECHNIQUE","BÂTIMENT TECHNIQUE"],
+		["BATIMENT TECHNIQUE","BÂTIMENT SCIENTIFIQUE"],
+		["BATIMENT TECHNIQUE","CENTRE DE RECHERCHE OU D'ESSAI"],
+		["BATIMENT TECHNIQUE","DÉPÔT D'ARCHIVES"],
+		["BATIMENT TECHNIQUE","CENTRE INFORMATIQUE"],
+		["BATIMENT TECHNIQUE","POSTE DE COMMANDEMENT"]],"dans le périmètre choisi")
+    XL.get_stat_by_element(col = "Typologie du bâtiment", value = "Surface au sol")
     XL.save(path3)
     XL.close()
     print(str(int(time.time()-t))+" secondes")

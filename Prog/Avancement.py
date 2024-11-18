@@ -5,11 +5,6 @@ Created on Thu Jul 11 11:18:30 2024
 @author: sacha.mailler
 """
 import sys
-import os
-import json
-import openpyxl
-import statsmodels.api as sm
-import time
 def return_line(txt,n=52):
     T="\n"
     len_line=0
