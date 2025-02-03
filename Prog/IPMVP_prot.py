@@ -8,9 +8,6 @@ from openpyxl import load_workbook
 import os
 import statsmodels.api as sm
 
-
-
-
 class IPMVP :
     def __init__(self,config):
         self.talon,self.chau,self.froi,self.use = 0,0,0,0
