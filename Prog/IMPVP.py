@@ -136,8 +136,8 @@ class IPMVP :
             return "0"+str(int(month_num))
 if __name__=="__main__":
     import os
-    ipmvppath="C:\\Users\\sacha.mailler\\Desktop\\GIT\\OSFI\\Datas\\IPMVP_fact_typ.xlsx"
-    path="C:\\Users\\sacha.mailler\\Desktop\\GIT\\OSFI\\Datas\\__work__"
+    ipmvppath="C:\\Users\\NOEMIE.BOISSEAU\\Documents\\GitHub\\OSFI\\Datas\\IPMVP_fact_typ.xlsx"
+    path="C:\\Users\\NOEMIE.BOISSEAU\\Documents\\GitHub\\OSFI\\Datas\\__work__"
     path = os.path.join(path,"178869_1000007090_Consommations_mensualisees_des_equipements.xlsx")
     a=IPMVP(path)
     a.load(IPMVP_path=ipmvppath)
